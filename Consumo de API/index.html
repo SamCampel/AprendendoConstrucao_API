@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Linguagens de Programação</title>
+    <hr>
+    <h4>Lista de Linguagens</h4>
+    <ul id="languages"></ul>
+    <hr>
+    <h4>Adicionar nova linguagem de programação</h4>
+    <input type="text" name="name" id="title" placeholder="Nome da linguagem"><br>
+    <input type="text" name="version" id="version" placeholder="Versão da linguagem"><br>
+    <input type="number" name="year" id="year" placeholder="Ano de lançamento"><br>
+    <button type="button" onclick="createLang()">Cadastrar</button>
+</head>
+<body>
+    
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+
+    function createLang(){
+        var titleInput = document.getElementById("title");
+        var versionInput = document.getElementById("version");
+        var yearInput = document.getElementById("year");
+
+        if (!titleInput.value || !versionInput.value || !yearInput.value) {
+        alert("Preencha todos os campos.");
+        return;
+        }
+
+        var language = {
+            title: titleInput.value,
+            version: versionInput.value,
+            year: yearInput.value
+        }
+
+        axios.post("http://localhost:1234/language", language).then( response => {
+            
+            if(response.status == 201){
+                alert("Linguagem cadastrada.");
+                window.location.reload();
+            }
+        }).catch(err => {
+            console.log("Erro ao cadastrar linguagem.")
+        })
+    }
+
+    function deleteLang(ListItem){
+        var id = ListItem.getAttribute("data-id");
+
+        axios.delete("http://localhost:1234/language/"+id).then( response => {
+            
+            if(response.status === 204){
+                alert("Linguagem deletada.");
+                window.location.reload();
+            }
+        }).catch(err => {
+            console.log("Erro ao deletar linguagem.")
+        })
+    }
+
+    function loadForm(ListItem){
+
+        
+        var id = ListItem.getAttribute("data-id");
+        var title = ListItem.getAttribute("data-title");
+        var version = ListItem.getAttribute("data-version");
+        var year = ListItem.getAttribute("data-year");
+
+        document.getElementById("idEdit").value = id;
+        document.getElementById("titleEdit").value = title;
+        document.getElementById("versionEdit").value = version;
+        document.getElementById("yearEdit").value = year;
+
+    }
+
+    function updateLang(){
+
+        var idInput = document.getElementById("idEdit")
+        var titleInput = document.getElementById("titleEdit");
+        var versionInput = document.getElementById("versionEdit");
+        var yearInput = document.getElementById("yearEdit");
+
+        if (!titleInput.value || !versionInput.value || !yearInput.value) {
+        alert("Preencha todos os campos.");
+        return;
+        }
+
+        var language = {
+            title: titleInput.value,
+            version: versionInput.value,
+            year: yearInput.value
+        }
+
+        var id = idInput.value;
+
+        axios.put("http://localhost:1234/language/"+id, language).then( response => {
+            
+            if(response.status == 201){
+                alert("Linguagem atualizada.");
+                window.location.reload();
+            }
+        }).catch(err => {
+            console.log("Erro ao ataulizar linguagem.")
+        })
+
+    }
+
+
+    axios.get("http://localhost:1234/languages").then(response => {
+        var languages = response.data
+        var list = document.getElementById("languages");
+
+        languages.forEach(language => {
+
+            var item = document.createElement("li");
+
+            item.setAttribute("data-id", language.id);
+            item.setAttribute("data-title", language.title);
+            item.setAttribute("data-version", language.version);
+            item.setAttribute("data-year", language.year);
+
+            item.innerHTML = language.title + " - " + language.version + " - " + language.year;
+
+            var deleteBtn = document.createElement("button");
+            deleteBtn.innerHTML = "Excluir";
+            deleteBtn.addEventListener("click", function(){
+                
+                deleteLang(item);
+                
+            });
+
+            var editBtn = document.createElement("button");
+            editBtn.innerHTML = "Editar";
+            editBtn.addEventListener("click", function(){
+                
+                loadForm(item);
+                
+            });
+
+            item.appendChild(deleteBtn);
+            item.appendChild(editBtn);
+
+            list.appendChild(item);
+
+        });
+            
+    }).catch(error => {
+
+        console.log(error);
+    });
+
+    
+</script>
+</html>
